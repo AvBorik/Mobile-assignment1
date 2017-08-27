@@ -9,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -18,7 +17,6 @@ import java.util.Random;
 
 public class mpaintAction extends View implements View.OnTouchListener {
 
-    private final List<ColorChangedEventListener> colorChangedListeners = new ArrayList<>();
     private ArrayList<CircleShape> shapeList = new ArrayList<>();
     private final ArrayList<CircleShape> shapeList1  = new ArrayList<>();
     private final Paint paint = new Paint();
@@ -94,7 +92,6 @@ public class mpaintAction extends View implements View.OnTouchListener {
                 colorThreadState = ColorThreadState.STARTED;
 
                 int color = random.nextInt();
-                ChangeColor(color);
 
                 for (int index = 0; index < motionEvent.getPointerCount(); index++) {
                     shapeList.add(new CircleShape(motionEvent.getX(index), motionEvent.getY(index), radius, color));
@@ -116,11 +113,8 @@ public class mpaintAction extends View implements View.OnTouchListener {
 
         shapeList1.clear();
 
-        int size = shapeList.size();
-
-        int last = (size >= 10) ? (size - 10) : 0;
-        for (int index = size - 1; index >= last; index--) {
-            shapeList1.add(shapeList.get(index));
+        for(CircleShape circle : shapeList) {
+            shapeList1.add(circle);
         }
 
         shapeList.clear();
@@ -128,10 +122,16 @@ public class mpaintAction extends View implements View.OnTouchListener {
         invalidate();
     }
 
-
-    private void ChangeColor(int color) {
+    public void Undo() {
+        int size = shapeList.size();
+        shapeList1.add(shapeList.get(size - 1));
+        shapeList.remove(size - 1);
+        invalidate();
     }
 
+    public void Redo() {
+
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -141,4 +141,4 @@ public class mpaintAction extends View implements View.OnTouchListener {
             canvas.drawCircle(s.getCenterX(), s.getCenterY(), s.getRadius(), paint);
         }
     }
-    }
+}

@@ -9,20 +9,26 @@ import android.widget.Button;
 import static pro.avborik.assignment1.R.layout.main;
 
 
-public class mpaint extends AppCompatActivity implements OnClickListener {
-
-    Button clear;
+public class mpaint extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(main);
 
-        clear = (Button) findViewById(R.id.buttonClear);
-        clear.setOnClickListener(this);
-    }
-
-    @Override
-    public void onClick(View view) {
-        clear()
+        final mpaintAction action1 = (mpaintAction) findViewById(R.id.customView);
+        Button buttonClear = (Button) findViewById(R.id.buttonClear);
+        Button buttonUndo = (Button) findViewById(R.id.buttonUndo);
+        buttonClear.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                action1.Clear();
+            }
+        });
+        buttonUndo.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                action1.Undo();
+            }
+        });
     }
 }
