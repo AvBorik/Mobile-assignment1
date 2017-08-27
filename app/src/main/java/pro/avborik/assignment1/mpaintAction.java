@@ -130,7 +130,18 @@ public class mpaintAction extends View implements View.OnTouchListener {
     }
 
     public void Redo() {
+        int size = shapeList1.size();
 
+        if (size > 0) {
+            shapeList.add(shapeList1.get(size - 1));
+            shapeList1.remove(size - 1);
+        }
+
+        invalidate();
+    }
+
+    public void ChangeBrush(int radius) {
+        this.radius = radius;
     }
 
     @Override
