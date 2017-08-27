@@ -23,6 +23,6 @@ public class mpaint extends AppCompatActivity implements OnClickListener {
 
     @Override
     public void onClick(View view) {
-
+        clear()
     }
 }
