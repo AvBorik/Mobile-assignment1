@@ -3,6 +3,8 @@ package pro.avborik.assignment1;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -16,15 +18,20 @@ import java.util.Random;
  */
 
 public class mpaintAction extends View implements View.OnTouchListener {
-
+   //Variables initiation
+        //Initiate array list to store circles
     private ArrayList<CircleShape> shapeList = new ArrayList<>();
+        //Initiate second array list to store cicles, which will be used for clear, undo and redo methods
     private final ArrayList<CircleShape> shapeList1  = new ArrayList<>();
     private final Paint paint = new Paint();
     private final Random random = new Random();
     private ColorThreadState colorThreadState = ColorThreadState.IDLE;
     private int radius = 70;
 
-    private class CircleShape {
+    private abstract class circle {
+    }
+
+    private class CircleShape extends circle {
 
         private float centerX;
         private float centerY;
@@ -80,8 +87,55 @@ public class mpaintAction extends View implements View.OnTouchListener {
 
     private void init() {
         setOnTouchListener(this);
+
+        final Handler h = new Handler();
+
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                long time = 0;
+                while(true) {
+                    synchronized(colorThreadState) {
+                        switch (colorThreadState) {
+                            case IDLE: {
+                                break;
+                            }
+
+                            case STARTED: {
+                                time = SystemClock.currentThreadTimeMillis();
+                                colorThreadState = ColorThreadState.ACTIVE;
+                                break;
+                            }
+
+                            case ACTIVE: {
+                                if (SystemClock.currentThreadTimeMillis() - time >= 500) {
+                                    colorThreadState = ColorThreadState.COMPLETED;
+                                }
+                                break;
+                            }
+
+                            case COMPLETED: {
+                                h.post(updateColor);
+                                colorThreadState = ColorThreadState.STARTED;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        t.start();
     }
 
+    Runnable updateColor = new Runnable() {
+        public void run() {
+            circle s = shapeList.get(shapeList.size() - 1);
+            if (s instanceof CircleShape) {
+                int color = random.nextInt();
+                ((CircleShape) s).setFillColor(color);
+                invalidate();
+            }
+        }
+    };
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         switch (motionEvent.getActionMasked()) {
