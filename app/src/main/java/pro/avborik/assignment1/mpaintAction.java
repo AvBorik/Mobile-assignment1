@@ -21,29 +21,34 @@ public class mpaintAction extends View implements View.OnTouchListener {
    //Variables initiation
         //Initiate array list to store circles
     private ArrayList<CircleShape> shapeList = new ArrayList<>();
-        //Initiate second array list to store cicles, which will be used for clear, undo and redo methods
+        //Initiate second array list to store cycles, which will be used for clear, undo and redo methods
     private final ArrayList<CircleShape> shapeList1  = new ArrayList<>();
+    // initiate brush for painting cycles
     private final Paint paint = new Paint();
+    // initiate basic random method to change color of cycles
     private final Random random = new Random();
+    // initiate thread for changing cycling colors(set idle on the default
     private ColorThreadState colorThreadState = ColorThreadState.IDLE;
+    // default radius size of cycles
     private int radius = 70;
-
+    // class for creating cycles shapes
     private abstract class circle {
     }
-
+    // class for shspes and its parameters
     private class CircleShape extends circle {
 
         private float centerX;
         private float centerY;
         private int fillColor;
         private int radius;
-
+         //shapes setter
         CircleShape(float centerX, float centerY, int radius, int fillColor) {
             this.centerX = centerX;
             this.centerY = centerY;
             this.radius = radius;
             this.fillColor = fillColor;
         }
+        // attributes get methods
         public float getCenterX() {
             return centerX;
         }
@@ -64,7 +69,7 @@ public class mpaintAction extends View implements View.OnTouchListener {
             return radius;
         }
     }
-
+   // Super classes
     public mpaintAction(Context context) {
         super(context);
         init();
@@ -84,15 +89,15 @@ public class mpaintAction extends View implements View.OnTouchListener {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
     }
-
+    // threads initialization
     private void init() {
         setOnTouchListener(this);
-
-        final Handler h = new Handler();
-
-        Thread t = new Thread(new Runnable() {
+       // initiate handler
+        final Handler hendler = new Handler();
+        // initiate thread and set states
+        Thread thread = new Thread(new Runnable() {
             public void run() {
-                long time = 0;
+                long timer = 0;
                 while(true) {
                     synchronized(colorThreadState) {
                         switch (colorThreadState) {
@@ -101,20 +106,20 @@ public class mpaintAction extends View implements View.OnTouchListener {
                             }
 
                             case STARTED: {
-                                time = SystemClock.currentThreadTimeMillis();
+                                timer = SystemClock.currentThreadTimeMillis();
                                 colorThreadState = ColorThreadState.ACTIVE;
                                 break;
                             }
 
                             case ACTIVE: {
-                                if (SystemClock.currentThreadTimeMillis() - time >= 500) {
+                                if (SystemClock.currentThreadTimeMillis() - timer >= 500) {
                                     colorThreadState = ColorThreadState.COMPLETED;
                                 }
                                 break;
                             }
 
                             case COMPLETED: {
-                                h.post(updateColor);
+                                hendler.post(updateColor);
                                 colorThreadState = ColorThreadState.STARTED;
                                 break;
                             }
@@ -123,9 +128,10 @@ public class mpaintAction extends View implements View.OnTouchListener {
                 }
             }
         });
-        t.start();
+        // start the thread
+        thread.start();
     }
-
+   // shange color on long touch
     Runnable updateColor = new Runnable() {
         public void run() {
             circle s = shapeList.get(shapeList.size() - 1);
@@ -139,20 +145,20 @@ public class mpaintAction extends View implements View.OnTouchListener {
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         switch (motionEvent.getActionMasked()) {
-
+           //set motions for multitouch
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
-
+                // set thread on start state
                 colorThreadState = ColorThreadState.STARTED;
-
+                // set random method to color (change color integer number)
                 int color = random.nextInt();
-
+                // add cycle from multitouch effect
                 for (int index = 0; index < motionEvent.getPointerCount(); index++) {
                     shapeList.add(new CircleShape(motionEvent.getX(index), motionEvent.getY(index), radius, color));
                 }
 
                 break;
-
+            // multitouch
             case MotionEvent.ACTION_UP:
                 colorThreadState = ColorThreadState.IDLE;
                 break;
@@ -162,9 +168,9 @@ public class mpaintAction extends View implements View.OnTouchListener {
         invalidate();
         return true;
     }
-
+    // clear method
     public void Clear() {
-
+        // clear undo shape list
         shapeList1.clear();
 
         for(CircleShape circle : shapeList) {
@@ -175,14 +181,14 @@ public class mpaintAction extends View implements View.OnTouchListener {
 
         invalidate();
     }
-
+    // ando method
     public void Undo() {
         int size = shapeList.size();
         shapeList1.add(shapeList.get(size - 1));
         shapeList.remove(size - 1);
         invalidate();
     }
-
+    // redo method
     public void Redo() {
         int size = shapeList1.size();
 
@@ -193,13 +199,14 @@ public class mpaintAction extends View implements View.OnTouchListener {
 
         invalidate();
     }
-
+    // change brush size method
     public void ChangeBrush(int radius) {
         this.radius = radius;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // main mehthod for add cycles on canvas
         super.onDraw(canvas);
         for (CircleShape s : shapeList) {
             paint.setColor(s.getFillColor());

@@ -17,14 +17,14 @@ public class mpaint extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(main);
-
+        // initiate buttons, text field and action class
         final mpaintAction action1 = (mpaintAction) findViewById(R.id.customView);
         Button buttonClear = (Button) findViewById(R.id.buttonClear);
         Button buttonUndo = (Button) findViewById(R.id.buttonUndo);
         Button buttonRedo = (Button) findViewById(R.id.buttonRedo);
         final EditText text = (EditText) findViewById(R.id.editText);
 
-
+        // initiate listeners for buttons and text field
         buttonClear.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -47,9 +47,12 @@ public class mpaint extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                // get text from text field, convert to integer and sent it to change brush method
+                // for changing the brush size.
+                // validate filed, to avoid null entry
                 if(text.getText().toString().equals(null) || text.getText().toString().equals(""))
                 {
-
+                    //set size to 0, if value is null, to avoid program crashing
                     text.setText("0");
 
             }
