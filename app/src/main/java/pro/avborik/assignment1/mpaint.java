@@ -24,6 +24,7 @@ public class mpaint extends AppCompatActivity {
         Button buttonRedo = (Button) findViewById(R.id.buttonRedo);
         final EditText text = (EditText) findViewById(R.id.editText);
 
+
         buttonClear.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -46,8 +47,16 @@ public class mpaint extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                int x = Integer.parseInt(text.getText().toString());
-                action1.ChangeBrush(x);
+                if(text.getText().toString().equals(null) || text.getText().toString().equals(""))
+                {
+
+                    text.setText("0");
+
+            }
+
+                    int x = Integer.parseInt(text.getText().toString());
+
+                    action1.ChangeBrush(x);
 
             }
 
@@ -60,7 +69,9 @@ public class mpaint extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
 
+
             }
         });
+
     }
 }
