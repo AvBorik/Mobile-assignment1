@@ -28,14 +28,11 @@ public class mpaintAction extends View implements View.OnTouchListener {
     // initiate basic random method to change color of cycles
     private final Random random = new Random();
     // initiate thread for changing cycling colors(set idle on the default
-    private ColorThreadState colorThreadState = ColorThreadState.IDLE;
+    private ThreadState threadState = ThreadState.SLEEP;
     // default radius size of cycles
     private int radius = 70;
-    // class for creating cycles shapes
-    private abstract class circle {
-    }
-    // class for shspes and its parameters
-    private class CircleShape extends circle {
+    // class for shapes and its parameters
+    private class CircleShape {
 
         private float centerX;
         private float centerY;
@@ -85,10 +82,6 @@ public class mpaintAction extends View implements View.OnTouchListener {
         init();
     }
 
-    public mpaintAction(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
     // threads initialization
     private void init() {
         setOnTouchListener(this);
@@ -99,28 +92,28 @@ public class mpaintAction extends View implements View.OnTouchListener {
             public void run() {
                 long timer = 0;
                 while(true) {
-                    synchronized(colorThreadState) {
-                        switch (colorThreadState) {
-                            case IDLE: {
+                    synchronized(threadState) {
+                        switch (threadState) {
+                            case SLEEP: {
                                 break;
                             }
 
-                            case STARTED: {
+                            case RUN: {
                                 timer = SystemClock.currentThreadTimeMillis();
-                                colorThreadState = ColorThreadState.ACTIVE;
+                                threadState = ThreadState.ACTIVE;
                                 break;
                             }
 
                             case ACTIVE: {
-                                if (SystemClock.currentThreadTimeMillis() - timer >= 500) {
-                                    colorThreadState = ColorThreadState.COMPLETED;
+                                if (SystemClock.currentThreadTimeMillis() - timer >= 300) {
+                                    threadState = ThreadState.DEAD;
                                 }
                                 break;
                             }
 
-                            case COMPLETED: {
+                            case DEAD: {
                                 hendler.post(updateColor);
-                                colorThreadState = ColorThreadState.STARTED;
+                                threadState = ThreadState.RUN;
                                 break;
                             }
                         }
@@ -134,12 +127,10 @@ public class mpaintAction extends View implements View.OnTouchListener {
    // shange color on long touch
     Runnable updateColor = new Runnable() {
         public void run() {
-            circle s = shapeList.get(shapeList.size() - 1);
-            if (s instanceof CircleShape) {
-                int color = random.nextInt();
-                ((CircleShape) s).setFillColor(color);
-                invalidate();
-            }
+            CircleShape s = shapeList.get(shapeList.size() - 1);
+            int color = random.nextInt();
+            s.setFillColor(color);
+            invalidate();
         }
     };
     @Override
@@ -149,18 +140,20 @@ public class mpaintAction extends View implements View.OnTouchListener {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
                 // set thread on start state
-                colorThreadState = ColorThreadState.STARTED;
+                threadState = ThreadState.RUN;
                 // set random method to color (change color integer number)
                 int color = random.nextInt();
+                int pointers = motionEvent.getPointerCount();
                 // add cycle from multitouch effect
-                for (int index = 0; index < motionEvent.getPointerCount(); index++) {
+                for (int index = 0; index < pointers; index++) {
                     shapeList.add(new CircleShape(motionEvent.getX(index), motionEvent.getY(index), radius, color));
+
                 }
 
                 break;
             // multitouch
             case MotionEvent.ACTION_UP:
-                colorThreadState = ColorThreadState.IDLE;
+                threadState = ThreadState.SLEEP;
                 break;
         }
 
@@ -206,7 +199,7 @@ public class mpaintAction extends View implements View.OnTouchListener {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        // main mehthod for add cycles on canvas
+        // main method for add cycles on canvas
         super.onDraw(canvas);
         for (CircleShape s : shapeList) {
             paint.setColor(s.getFillColor());
